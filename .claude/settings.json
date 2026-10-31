@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"${CLAUDE_PROJECT_DIR}/config/hooks/level_gate.py\"",
+            "command": "python \"${CLAUDE_PROJECT_DIR}/config/hooks/level_gate.py\"",
             "timeout": 10
           }
         ]
