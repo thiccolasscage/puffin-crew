@@ -14,11 +14,19 @@ cases = [
     ["L1 Ledger query", 0, "ArtifactData", {"action": "query", "collection": "tasks"}, "allow"],
     ["L1 Ledger get", 0, "ArtifactData", {"action": "get", "collection": "tasks", "doc_id": "x"}, "allow"],
     ["L1 Ledger list", 0, "ArtifactData", {"action": "list", "collection": "tasks"}, "allow"],
-    ["L1 Ledger set", 0, "ArtifactData", {"action": "set", "collection": "stretches", "doc_id": "x"}, "deny"],
-    ["L1 Ledger update", 0, "ArtifactData", {"action": "update", "collection": "stretches", "doc_id": "x"}, "deny"],
-    ["L1 Ledger batch", 0, "ArtifactData", {"action": "batch"}, "deny"],
+    ["L1 log own stretch", 0, "ArtifactData", {"action": "set", "url": "https://claude.ai/code/artifact/018d4349-e500-4eaf-94ab-1c461e65a395", "collection": "stretches", "doc_id": "x", "data": {"loggedBy": "idle-sweep"}}, "allow"],
+    ["L1 log stretch from file", 0, "ArtifactData", {"action": "set", "url": "https://claude.ai/code/artifact/018d4349-e500-4eaf-94ab-1c461e65a395", "collection": "stretches", "doc_id": "x", "file_path": "STRETCH_FILE"}, "allow"],
+    ["L1 stretch not idle-sweep", 0, "ArtifactData", {"action": "set", "url": "https://claude.ai/code/artifact/018d4349-e500-4eaf-94ab-1c461e65a395", "collection": "stretches", "doc_id": "x", "data": {"loggedBy": "end-of-stretch"}}, "deny"],
+    ["L1 replace an existing stretch", 0, "ArtifactData", {"action": "set", "url": "https://claude.ai/code/artifact/018d4349-e500-4eaf-94ab-1c461e65a395", "collection": "stretches", "doc_id": "x", "if_version": 3, "data": {"loggedBy": "idle-sweep"}}, "deny"],
+    ["L1 edit a stretch", 0, "ArtifactData", {"action": "update", "url": "https://claude.ai/code/artifact/018d4349-e500-4eaf-94ab-1c461e65a395", "collection": "stretches", "doc_id": "x", "data": {"loggedBy": "idle-sweep"}}, "deny"],
+    ["L1 str_replace a stretch", 0, "ArtifactData", {"action": "str_replace", "url": "https://claude.ai/code/artifact/018d4349-e500-4eaf-94ab-1c461e65a395", "collection": "stretches", "doc_id": "x", "field": "summary"}, "deny"],
+    ["L1 stretches on another artifact", 0, "ArtifactData", {"action": "set", "url": "https://claude.ai/artifact/other", "collection": "stretches", "doc_id": "x", "data": {"loggedBy": "idle-sweep"}}, "deny"],
+    ["L1 Ledger task write", 0, "ArtifactData", {"action": "set", "url": "https://claude.ai/code/artifact/018d4349-e500-4eaf-94ab-1c461e65a395", "collection": "tasks", "doc_id": "x", "data": {"loggedBy": "idle-sweep"}}, "deny"],
+    ["L1 Ledger batch", 0, "ArtifactData", {"action": "batch", "url": "https://claude.ai/code/artifact/018d4349-e500-4eaf-94ab-1c461e65a395"}, "deny"],
     ["L1 Ledger no action", 0, "ArtifactData", {}, "deny"],
-    ["L5 Ledger set", 400, "ArtifactData", {"action": "set", "collection": "stretches", "doc_id": "x"}, "allow"],
+    ["L8 Ledger taskStates write", 700, "ArtifactData", {"action": "update", "url": "https://claude.ai/code/artifact/018d4349-e500-4eaf-94ab-1c461e65a395", "collection": "taskStates", "doc_id": "x", "data": {}}, "deny"],
+    ["L8 Ledger delete", 700, "ArtifactData", {"action": "delete", "url": "https://claude.ai/code/artifact/018d4349-e500-4eaf-94ab-1c461e65a395", "collection": "stretches", "doc_id": "x"}, "deny"],
+    ["L8 dashboard write", 700, "ArtifactData", {"action": "update", "url": "https://claude.ai/artifact/A8C1icLCbfnJVZB2oLrP4S", "collection": "datasets", "doc_id": "crew", "data": {}}, "deny"],
     ["L1 Edit paper.md", 0, "Edit", {"file_path": "/repo/crew/paper.md"}, "allow"],
     ["L1 Write paper.md", 0, "Write", {"file_path": "/repo/crew/paper.md"}, "allow"],
     ["L1 Edit fake paper.md", 0, "Edit", {"file_path": "/repo/crew/paper.md.bak"}, "deny"],
@@ -93,7 +101,11 @@ tmp = pathlib.Path(tempfile.mkdtemp())
 (tmp / "crew").mkdir()
 shutil.copy(REPO / "crew" / "xp.py", tmp / "crew" / "xp.py")
 failed = 0
+stretch_file = tmp / "stretch.json"
+stretch_file.write_text(json.dumps({"loggedBy": "idle-sweep"}))
 for name, xp, tool, tool_input, want in cases:
+    if tool_input.get("file_path") == "STRETCH_FILE":
+        tool_input = {**tool_input, "file_path": str(stretch_file)}
     (tmp / "crew" / "xp.json").write_text(json.dumps({"bots": {"ledge": {"xp": xp, "history": []}}}))
     got = run(tmp, {"tool_name": tool, "tool_input": tool_input})
     mark = "ok  " if got == want else "FAIL"

@@ -22,9 +22,10 @@ if not bot:
 GATE = {
     "WebSearch": 3, "WebFetch": 3,
     "Edit": 4, "Write": 4, "MultiEdit": 4, "NotebookEdit": 4,
-    "ArtifactData": 5,
     "mcp__claude-code-remote__create_trigger": 6,
 }
+# The Claude Accuracy Ledger artifact; the only store a bot may write to.
+LEDGER_ID = "018d4349-e500-4eaf-94ab-1c461e65a395"
 # Below this level, Bash runs only the commands on the short list below.
 FULL_SHELL = 4
 
@@ -152,9 +153,25 @@ if tool == "Bash":
     sys.exit(0)
 
 need = GATE.get(tool, 1)
-# Reading the Ledger is level 1 (levels.md); only writes to it gate at 5.
-if tool == "ArtifactData" and tool_input.get("action") in ("get", "list", "query", "profiles"):
-    need = 1
+# Ledger (levels.md): reading anything, and creating the bot's own idle-sweep stretch,
+# are level 1. Every other artifact-store write is Kyle's, at every level.
+if tool == "ArtifactData":
+    action = tool_input.get("action")
+    if action not in ("get", "list", "query", "profiles"):
+        doc = tool_input.get("data")
+        if doc is None and tool_input.get("file_path"):
+            try:
+                doc = json.loads(pathlib.Path(tool_input["file_path"]).read_text())
+            except (OSError, ValueError):
+                doc = None
+        # A set without if_version can only create a document, never replace one.
+        own_stretch = (action == "set" and "if_version" not in tool_input
+                       and LEDGER_ID in str(tool_input.get("url", ""))
+                       and tool_input.get("collection") == "stretches"
+                       and isinstance(doc, dict) and doc.get("loggedBy") == "idle-sweep")
+        if not own_stretch:
+            deny(f"{bot} may only read the Ledger and log its own run as a new idle-sweep stretch; "
+                 "editing entries, tasks, fixes, marks, batch and delete are Kyle's at every level.")
 # The run routine appends to the shared paper at every level.
 if tool in ("Edit", "Write") and path.endswith("crew/paper.md"):
     need = 1

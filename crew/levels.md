@@ -18,11 +18,11 @@ Level = 1 + floor(XP / 100). Level never drops below 1.
 
 | Level | XP | Unlocks |
 |---|---|---|
-| 1 | 0 | Read files, read the Ledger, talk, append its Daily Brief to `crew/paper.md` |
+| 1 | 0 | Read files, read the Ledger, talk, append its Daily Brief to `crew/paper.md`, log its own run to the Ledger as a new idle-sweep stretch |
 | 2 | 100 | Write to its own `memory.md` |
 | 3 | 200 | Web search |
 | 4 | 300 | Edit files outside its own folder (staged, never delete) |
-| 5 | 400 | Write to the Ledger (log stretches) |
+| 5 | 400 | Open (Ledger logging moved to level 1 on Oct 31, 2026; every other Ledger write stays Kyle's at every level) |
 | 6 | 500 | Create one scheduled follow-up for itself |
 | 8 | 700 | Act on routine items without asking first. Routine = reversible and inside the bot's lane. Anything that sends, merges, deletes or decides for Kyle still waits for his yes at every level |
 

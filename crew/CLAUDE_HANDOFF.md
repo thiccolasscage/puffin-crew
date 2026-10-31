@@ -39,7 +39,7 @@ Scheduled task "Ledge daily run" (id `trig_01CCXQH4qxZKnZbx9wx6RJzR`) does this 
 ## XP and levels (from levels.md)
 
 run +10, good +25, catch +15, bad -10, idle -5 per decay check after 3 days (parked bots skipped). Level = 1 + floor(XP/100).
-L1 read/talk; L2 own memory.md; L3 web; L4 edit outside own folder; L5 write to Ledger; L6 one scheduled follow-up; L8 routine actions without asking (routine = reversible and inside the lane).
+L1 read/talk and log its own run to the Ledger (moved from L5 on Oct 31); L2 own memory.md; L3 web; L4 edit outside own folder; L5 open; L6 one scheduled follow-up; L8 routine actions without asking (routine = reversible and inside the lane).
 Kyle rates runs: `python3 crew/xp.py award ledge good|bad`. Pause: `park ledge` / `unpark ledge`.
 
 ## Standing crew rules
