@@ -15,6 +15,7 @@ Start here: `crew/README.md` (how it works) and `crew/CLAUDE_HANDOFF.md` (state 
 | Level gate hook and its tests | `config/hooks/level_gate.py`, `config/hooks/test-level-gate.py` |
 | Hook settings for cloud runs | `.claude/settings.json` |
 | Dashboard data script | `crew/dashboard_data.py` |
+| Desktop app: agents delegate, report up a tree, one inbox for questions | `app/` (see `app/README.md`) |
 
 Dashboard: https://claude.ai/artifact/A8C1icLCbfnJVZB2oLrP4S
 
