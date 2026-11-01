@@ -1,3 +1,7 @@
 # Active bot marker, written by each cloud run
 crew/ACTIVE
 __pycache__/
+
+# Desktop app
+app/node_modules/
+app/out/

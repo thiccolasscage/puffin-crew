@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'" />
+  <title>Puffin Crew</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg class="puffin" viewBox="0 0 32 32" aria-hidden="true">
+        <ellipse cx="16" cy="19" rx="10" ry="11" class="p-body" />
+        <ellipse cx="16" cy="21" rx="6.5" ry="8" class="p-belly" />
+        <circle cx="16" cy="11" r="7.5" class="p-body" />
+        <ellipse cx="14.5" cy="11.5" rx="4.5" ry="4" class="p-face" />
+        <circle cx="14" cy="10.5" r="1.2" class="p-eye" />
+        <path d="M18.5 11.5 L25 13 L18.5 15.5 Z" class="p-beak" />
+      </svg>
+      <span>Puffin Crew</span>
+    </div>
+    <button id="btn-new" class="primary">New task</button>
+    <button id="btn-team">Team</button>
+    <div class="spacer"></div>
+    <div class="pace" id="global-pace" role="radiogroup" aria-label="Pace">
+      <span class="pace-label">Pace</span>
+      <button data-pace="thrifty" title="Cheaper models, fewer agents at once">Thrifty</button>
+      <button data-pace="balanced" title="Default">Balanced</button>
+      <button data-pace="max" title="Strongest models, more agents at once">Max</button>
+    </div>
+    <span class="meter" id="meter"></span>
+    <button id="btn-settings" class="icon" title="Settings" aria-label="Settings">⚙</button>
+  </header>
+
+  <main class="layout">
+    <aside class="tree-pane">
+      <div class="pane-head">
+        <span>Work</span>
+        <label class="toggle"><input type="checkbox" id="hide-done" /> Hide finished</label>
+      </div>
+      <div id="tree" class="tree" role="tree"></div>
+    </aside>
+
+    <section class="detail-pane" id="detail"></section>
+
+    <aside class="inbox-pane">
+      <div class="pane-head">
+        <span>Inbox</span>
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="needs">Needs you <b id="needs-count"></b></button>
+          <button class="tab" data-tab="reports">Reports <b id="reports-count"></b></button>
+        </div>
+      </div>
+      <div id="inbox" class="inbox"></div>
+    </aside>
+  </main>
+
+  <dialog id="dlg-new" class="dlg">
+    <form method="dialog" id="form-new">
+      <h2>New task</h2>
+      <label>What needs doing
+        <textarea name="task" rows="7" required placeholder="Describe the work. The lead splits it up and hands pieces to the crew."></textarea>
+      </label>
+      <div class="row">
+        <label>Give it to <select name="role"></select></label>
+        <label>Runs on <select name="provider"></select></label>
+        <label>Pace <select name="pace"><option value="">Role default</option><option value="thrifty">Thrifty</option><option value="balanced">Balanced</option><option value="max">Max</option></select></label>
+      </div>
+      <label>Folder
+        <div class="folder"><input name="cwd" placeholder="Where the agents work" /><button type="button" id="pick-folder">Choose…</button></div>
+      </label>
+      <menu>
+        <button value="cancel" formnovalidate>Cancel</button>
+        <button value="ok" class="primary">Start</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-team" class="dlg wide">
+    <form method="dialog" id="form-team">
+      <h2>Team</h2>
+      <p class="hint">Describe in plain English how you want your agents to work. You'll see the team before anything changes.</p>
+      <div class="team-describe">
+        <textarea id="team-text" rows="3" placeholder="e.g. A lead splits the work. A developer on Claude writes the code, and Codex reviews and tests every change. Keep it cheap."></textarea>
+        <button type="button" id="team-design">Design team</button>
+      </div>
+      <p id="team-note" class="hint"></p>
+      <div id="team-roles" class="roles"></div>
+      <menu>
+        <button type="button" id="team-add">Add role</button>
+        <span class="spacer"></span>
+        <button value="cancel" formnovalidate>Close</button>
+        <button value="ok" class="primary" id="team-save">Save team</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-memory" class="dlg wide">
+    <form method="dialog" id="form-memory">
+      <h2 id="memory-title">Memory</h2>
+      <p class="hint" id="memory-hint">Every agent with this role reads this, in every project. Agents add to it with the remember tool.</p>
+      <textarea id="memory-text" rows="16" spellcheck="false"></textarea>
+      <menu>
+        <button value="cancel" formnovalidate>Close</button>
+        <button value="ok" class="primary" id="memory-save">Save</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-settings" class="dlg">
+    <form method="dialog" id="form-settings">
+      <h2>Settings</h2>
+      <label>Permission prompts
+        <select name="permissionMode">
+          <option value="ask">Ask me in the inbox</option>
+          <option value="acceptEdits">Allow file edits, ask for the rest</option>
+          <option value="bypassPermissions">Never ask (agents can do anything)</option>
+        </select>
+      </label>
+      <fieldset>
+        <legend>Claude models by pace</legend>
+        <div class="row">
+          <label>Thrifty <input name="m.claude.thrifty" /></label>
+          <label>Balanced <input name="m.claude.balanced" /></label>
+          <label>Max <input name="m.claude.max" /></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Codex models by pace (blank = Codex default)</legend>
+        <div class="row">
+          <label>Thrifty <input name="m.codex.thrifty" /></label>
+          <label>Balanced <input name="m.codex.balanced" /></label>
+          <label>Max <input name="m.codex.max" /></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Agents running at once</legend>
+        <div class="row">
+          <label>Thrifty <input name="c.thrifty" type="number" min="1" max="32" /></label>
+          <label>Balanced <input name="c.balanced" type="number" min="1" max="32" /></label>
+          <label>Max <input name="c.max" type="number" min="1" max="32" /></label>
+        </div>
+      </fieldset>
+      <div class="row">
+        <label>Default folder <input name="defaultCwd" /></label>
+      </div>
+      <div class="row">
+        <label>Claude command <input name="claudePath" placeholder="claude" /></label>
+        <label>Codex command <input name="codexPath" placeholder="codex" /></label>
+      </div>
+      <p class="hint" id="settings-where"></p>
+      <menu>
+        <button value="cancel" formnovalidate>Cancel</button>
+        <button value="ok" class="primary">Save</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script src="markdown.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
